@@ -51,17 +51,17 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
         {userEmail ? (
           <div className="text-right text-sm text-slate-700">
             <div className="font-medium">{userEmail}</div>
-            <button onClick={() => signOut()} className="mt-1 text-blue-600 hover:underline">
+            <a href="/api/auth/signout" className="mt-1 block text-blue-600 hover:underline">
               Sign out
-            </button>
+            </a>
           </div>
         ) : (
-          <button
-            onClick={() => signIn("google")}
+          <a
+            href="/api/auth/signin/google"
             className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
           >
             Sign in with Google
-          </button>
+          </a>
         )}
       </header>
 
