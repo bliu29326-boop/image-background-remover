@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSession } from "next-auth/react";
+import AuthButton from "./components/AuthButton";
 
 export default function Home() {
+  const { data: session } = useSession();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -52,13 +55,21 @@ export default function Home() {
     }
   };
 
+  const canUseTool = Boolean(session);
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold">Image Background Remover</h1>
-        <p className="mt-2 text-slate-600">
-          Upload an image and remove its background in seconds.
-        </p>
+      <header className="mb-10 flex items-start justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold">Image Background Remover</h1>
+          <p className="mt-2 text-slate-600">
+            Upload an image and remove its background in seconds.
+          </p>
+        </div>
+
+        <Suspense fallback={<div className="h-10 w-32 animate-pulse rounded-md bg-slate-200" />}>
+          <AuthButton />
+        </Suspense>
       </header>
 
       <section className="rounded-lg border border-dashed border-slate-300 bg-white p-6">
@@ -81,15 +92,19 @@ export default function Home() {
 
         <button
           onClick={handleRemoveBg}
-          disabled={!file || loading}
+          disabled={!file || loading || !canUseTool}
           className="mt-6 rounded-md bg-blue-600 px-5 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Processing..." : "Remove Background"}
         </button>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600">{error}</p>
+        {!session && (
+          <p className="mt-3 text-sm text-slate-500">
+            Sign in with Google to remove backgrounds.
+          </p>
         )}
+
+        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       </section>
 
       {resultUrl && (
