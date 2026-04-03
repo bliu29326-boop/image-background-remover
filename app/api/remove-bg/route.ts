@@ -6,6 +6,11 @@ export async function POST(request: Request) {
     return new Response("Missing REMOVEBG_API_KEY", { status: 500 });
   }
 
+  const contentType = request.headers.get("content-type") || "";
+  if (!contentType.includes("multipart/form-data")) {
+    return new Response("multipart/form-data is required", { status: 400 });
+  }
+
   const formData = await request.formData();
   const file = formData.get("image_file");
 

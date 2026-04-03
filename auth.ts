@@ -1,17 +1,14 @@
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import { D1Adapter } from "@auth/d1-adapter"
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
-export const runtime = "edge"
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: D1Adapter(process.env.DB as any),
+export const authOptions: NextAuthOptions = {
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
   secret: process.env.AUTH_SECRET,
-  trustHost: true,
-})
+};
+
+export default NextAuth(authOptions);

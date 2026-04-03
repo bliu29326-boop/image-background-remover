@@ -31,7 +31,7 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
       const formData = new FormData();
       formData.append("image_file", file);
       const res = await fetch("/api/remove-bg", { method: "POST", body: formData });
-      if (!res.ok) throw new Error(await res.text() || "Remove background failed");
+      if (!res.ok) throw new Error((await res.text()) || "Remove background failed");
       setResultUrl(URL.createObjectURL(await res.blob()));
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -51,17 +51,17 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
         {userEmail ? (
           <div className="text-right text-sm text-slate-700">
             <div className="font-medium">{userEmail}</div>
-            <a href="/api/auth/signout" className="mt-1 block text-blue-600 hover:underline">
+            <button onClick={() => signOut()} className="mt-1 block text-blue-600 hover:underline">
               Sign out
-            </a>
+            </button>
           </div>
         ) : (
-          <a
-            href="/api/auth/signin/google"
+          <button
+            onClick={() => signIn("google")}
             className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
           >
             Sign in with Google
-          </a>
+          </button>
         )}
       </header>
 

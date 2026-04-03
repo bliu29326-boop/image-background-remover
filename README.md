@@ -2,48 +2,40 @@
 
 MVP web app for removing image backgrounds using remove.bg.
 
-Last redeploy trigger: 2026-03-21T07:10:09Z
+## Current status
+- Upload image
+- Remove background via remove.bg
+- Preview and download PNG result
+- Google sign-in via NextAuth v4
+- Build verified locally
 
-## Google OAuth (NextAuth)
-
-### Environment variables
+## Environment variables
 Create `.env.local` based on `.env.local.example`:
 
-```
+```env
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-NEXTAUTH_URL=https://backgroundremove.xyz
-NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+AUTH_SECRET=
+REMOVEBG_API_KEY=
 ```
 
-### Google Cloud Console
+## Google Cloud Console
 Authorized JavaScript origins:
 - https://backgroundremove.xyz
-- http://localhost:3000 (dev)
+- http://localhost:3000
 
 Authorized redirect URIs:
 - https://backgroundremove.xyz/api/auth/callback/google
-- http://localhost:3000/api/auth/callback/google (dev)
+- http://localhost:3000/api/auth/callback/google
 
-## D1 user storage
-
-### D1 binding name
-- db_image_background_remove
-
-### Schema
-Create the table in your D1 database:
-
-```sql
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE,
-  name TEXT,
-  image TEXT,
-  created_at TEXT NOT NULL,
-  last_login_at TEXT NOT NULL
-);
+## Local development
+```bash
+npm install
+npm run dev
 ```
 
-### Behavior
-- On Google sign-in, the user is upserted into D1 by `id` (Google `sub`).
-- `last_login_at` is updated on every login.
+## Notes
+- Current auth implementation uses `next-auth@4`
+- D1 user persistence is not enabled in the current working version
+- remove.bg requires a valid `REMOVEBG_API_KEY`
