@@ -13,18 +13,23 @@ Add the following callback URLs in Google Cloud Console:
 - `http://localhost:3000/api/auth/callback/google`
 - `https://backgroundremove.xyz/api/auth/callback/google`
 
+## Build command
+```bash
+npm run pages:build
+```
+
+## Build output directory
+```bash
+.open-next/assets
+```
+
 ## Local development
 ```bash
 npm install
 npm run dev
 ```
 
-## Production build
-```bash
-npm run build
-npm run pages:build
-```
-
 ## Notes
 - Current stable auth implementation uses `next-auth@4`
+- OpenNext Cloudflare build is verified with `.open-next/assets` as Pages output
 - D1 is configured in `wrangler.toml`, but not required for the currently verified login flow
