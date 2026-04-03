@@ -40,3 +40,4 @@ npm run dev
 - D1 user persistence is not enabled in the current working version
 - remove.bg requires a valid `REMOVEBG_API_KEY`
 
+
