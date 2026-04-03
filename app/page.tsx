@@ -1,8 +1,7 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import HomeClient from "./components/HomeClient";
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   return <HomeClient userEmail={session?.user?.email ?? null} />;
 }

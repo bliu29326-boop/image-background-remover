@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 function getErrorMessage(error: string | undefined) {
