@@ -13,8 +13,14 @@ Create `.env.local` based on `.env.local.example`:
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 NEXTAUTH_URL=https://backgroundremove.xyz
+AUTH_SECRET=
 NEXTAUTH_SECRET=
 ```
+
+Notes:
+- Runtime secret is read from `AUTH_SECRET` first.
+- `NEXTAUTH_SECRET` is kept as a fallback for compatibility.
+- On Cloudflare Pages, D1 is provided via the `DB` binding, not `process.env.DB`.
 
 ### Google Cloud Console
 Authorized JavaScript origins:
@@ -28,7 +34,7 @@ Authorized redirect URIs:
 ## D1 user storage
 
 ### D1 binding name
-- db_image_background_remove
+- DB
 
 ### Schema
 Create the table in your D1 database:

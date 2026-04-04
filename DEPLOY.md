@@ -26,8 +26,14 @@ wrangler d1 execute auth_db --file=./schema.sql
 在 Cloudflare Pages 项目设置中添加:
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `AUTH_SECRET` (生成随机字符串)
+- `AUTH_SECRET`（运行时优先使用）
+- `NEXTAUTH_SECRET`（兼容保留，可与 `AUTH_SECRET` 保持一致）
+- `NEXTAUTH_URL`
 - `REMOVEBG_API_KEY`
+
+注意：
+- Cloudflare D1 在运行时通过 `DB` binding 注入，不是 `process.env.DB`。
+- Pages 项目里要确保已绑定 D1：`DB -> auth_db`。
 
 ## 5. 本地开发
 
