@@ -10,17 +10,23 @@ type CloudflareEnv = {
 export const runtime = "edge"
 
 export const { handlers, signIn, signOut, auth } = NextAuth(() => {
-  let db: CloudflareEnv["DB"] | undefined
+  let env: CloudflareEnv | undefined
 
   try {
-    const { env } = getCloudflareContext({ async: false }) as unknown as { env: CloudflareEnv }
-    db = env?.DB
+    const context = getCloudflareContext({ async: false }) as unknown as { env?: CloudflareEnv }
+    env = context.env
   } catch {
-    db = undefined
+    env = undefined
+  }
+
+  const isCloudflareRuntime = typeof env !== "undefined"
+
+  if (isCloudflareRuntime && !env?.DB) {
+    throw new Error("D1 binding DB is missing at runtime")
   }
 
   return {
-    adapter: db ? D1Adapter(db) : undefined,
+    adapter: env?.DB ? D1Adapter(env.DB) : undefined,
     providers: [
       Google({
         clientId: process.env.GOOGLE_CLIENT_ID!,
