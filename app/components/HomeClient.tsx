@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn, signOut } from "next-auth/react";
 
 export default function HomeClient({ userEmail }: { userEmail: string | null }) {
@@ -9,6 +9,35 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const savedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const saveUser = async () => {
+      if (!userEmail || savedRef.current === userEmail) return;
+
+      try {
+        setSaveStatus("Syncing user to D1...");
+        const res = await fetch("/api/save-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userEmail, name: userEmail, image: null }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Failed to save user");
+        }
+
+        savedRef.current = userEmail;
+        setSaveStatus("User synced to D1");
+      } catch (err: any) {
+        setSaveStatus(`D1 sync failed: ${err.message || "unknown error"}`);
+      }
+    };
+
+    void saveUser();
+  }, [userEmail]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
@@ -46,6 +75,7 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
         <div>
           <h1 className="text-3xl font-bold">Image Background Remover</h1>
           <p className="mt-2 text-slate-600">Upload an image and remove its background in seconds.</p>
+          {saveStatus && <p className="mt-2 text-sm text-slate-500">{saveStatus}</p>}
         </div>
 
         {userEmail ? (
