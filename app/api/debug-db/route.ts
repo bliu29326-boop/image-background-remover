@@ -1,9 +1,18 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 
+type CloudflareEnv = {
+  DB?: {
+    prepare: (query: string) => {
+      first: <T>() => Promise<T | null>
+      all: <T>() => Promise<{ results?: T[] }>
+    }
+  }
+}
+
 export async function GET() {
   try {
     const { env } = getCloudflareContext({ async: false }) as unknown as {
-      env?: { DB?: D1Database }
+      env?: CloudflareEnv
     }
 
     const hasDb = Boolean(env?.DB)
