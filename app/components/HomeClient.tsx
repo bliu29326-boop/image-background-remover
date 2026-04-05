@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { signIn, signOut } from "next-auth/react";
 
 export default function HomeClient({ userEmail }: { userEmail: string | null }) {
@@ -10,34 +10,33 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
-  const savedRef = useRef<string | null>(null);
+  const [savingUser, setSavingUser] = useState(false);
 
-  useEffect(() => {
-    const saveUser = async () => {
-      if (!userEmail || savedRef.current === userEmail) return;
+  const handleSaveUser = async () => {
+    if (!userEmail) return;
 
-      try {
-        setSaveStatus("Syncing user to D1...");
-        const res = await fetch("/api/save-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userEmail, name: userEmail, image: null }),
-        });
+    try {
+      setSavingUser(true);
+      setSaveStatus("Syncing user to D1...");
 
-        const data = await res.json();
-        if (!res.ok || !data.ok) {
-          throw new Error(data.error || "Failed to save user");
-        }
+      const res = await fetch("/api/save-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, name: userEmail, image: null }),
+      });
 
-        savedRef.current = userEmail;
-        setSaveStatus("User synced to D1");
-      } catch (err: any) {
-        setSaveStatus(`D1 sync failed: ${err.message || "unknown error"}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to save user");
       }
-    };
 
-    void saveUser();
-  }, [userEmail]);
+      setSaveStatus("User synced to D1");
+    } catch (err: any) {
+      setSaveStatus(`D1 sync failed: ${err.message || "unknown error"}`);
+    } finally {
+      setSavingUser(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
@@ -81,7 +80,14 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
         {userEmail ? (
           <div className="text-right text-sm text-slate-700">
             <div className="font-medium">{userEmail}</div>
-            <button onClick={() => signOut()} className="mt-1 block text-blue-600 hover:underline">
+            <button
+              onClick={handleSaveUser}
+              disabled={savingUser}
+              className="mt-2 block rounded-md bg-emerald-600 px-3 py-2 text-white disabled:opacity-60"
+            >
+              {savingUser ? "Syncing..." : "Save current user to D1"}
+            </button>
+            <button onClick={() => signOut()} className="mt-2 block text-blue-600 hover:underline">
               Sign out
             </button>
           </div>
