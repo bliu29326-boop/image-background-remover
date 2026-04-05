@@ -42,6 +42,10 @@ export default function HomeClient({ userEmail }: { userEmail: string | null }) 
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+        BUILD MARK: 5e8da1d / 7300848 / 9523afc / 9fb23d3 / manual-d1-write-enabled
+      </div>
+
       <header className="mb-10 flex items-start justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold">Image Background Remover</h1>
