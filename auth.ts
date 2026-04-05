@@ -1,39 +1,66 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
-import { D1Adapter } from "@auth/d1-adapter"
 import { getCloudflareContext } from "@opennextjs/cloudflare"
 
+type PreparedStatement = {
+  bind: (...values: unknown[]) => {
+    run: () => Promise<unknown>
+  }
+}
+
 type CloudflareEnv = {
-  DB?: Parameters<typeof D1Adapter>[0]
+  DB?: {
+    prepare: (query: string) => PreparedStatement
+  }
+}
+
+function getDb() {
+  try {
+    const context = getCloudflareContext({ async: false }) as unknown as { env?: CloudflareEnv }
+    return context.env?.DB
+  } catch {
+    return undefined
+  }
 }
 
 export const runtime = "edge"
 
-export const { handlers, signIn, signOut, auth } = NextAuth(() => {
-  let env: CloudflareEnv | undefined
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  trustHost: true,
+  callbacks: {
+    async signIn({ user }) {
+      const db = getDb()
 
-  try {
-    const context = getCloudflareContext({ async: false }) as unknown as { env?: CloudflareEnv }
-    env = context.env
-  } catch {
-    env = undefined
-  }
+      if (!db) {
+        throw new Error("D1 binding DB is missing at runtime")
+      }
 
-  const isCloudflareRuntime = typeof env !== "undefined"
+      if (!user.email) {
+        return false
+      }
 
-  if (isCloudflareRuntime && !env?.DB) {
-    throw new Error("D1 binding DB is missing at runtime")
-  }
+      const userId = user.id ?? crypto.randomUUID()
 
-  return {
-    adapter: env?.DB ? D1Adapter(env.DB) : undefined,
-    providers: [
-      Google({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      }),
-    ],
-    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
-    trustHost: true,
-  }
+      await db
+        .prepare(
+          `INSERT INTO users (id, name, email, image)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(email) DO UPDATE SET
+             name = excluded.name,
+             image = excluded.image`
+        )
+        .bind(userId, user.name ?? null, user.email, user.image ?? null)
+        .run()
+
+      user.id = userId
+      return true
+    },
+  },
 })
