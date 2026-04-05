@@ -1,14 +1,20 @@
--- Auth.js D1 Adapter Schema
-CREATE TABLE IF NOT EXISTS users (
+-- Auth.js D1 Adapter Schema (rebuilt for stable Auth.js v5 + @auth/d1-adapter usage)
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS verification_tokens;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
   id TEXT PRIMARY KEY,
   name TEXT,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT,
   emailVerified INTEGER,
   image TEXT
 );
 
-CREATE TABLE IF NOT EXISTS accounts (
-  id TEXT PRIMARY KEY,
+CREATE UNIQUE INDEX users_email_unique ON users(email);
+
+CREATE TABLE accounts (
   userId TEXT NOT NULL,
   type TEXT NOT NULL,
   provider TEXT NOT NULL,
@@ -20,23 +26,27 @@ CREATE TABLE IF NOT EXISTS accounts (
   scope TEXT,
   id_token TEXT,
   session_state TEXT,
+  refresh_token_expires_in INTEGER,
+  PRIMARY KEY (provider, providerAccountId),
   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT PRIMARY KEY,
-  sessionToken TEXT NOT NULL UNIQUE,
+CREATE INDEX accounts_userId_idx ON accounts(userId);
+
+CREATE TABLE sessions (
+  sessionToken TEXT PRIMARY KEY,
   userId TEXT NOT NULL,
   expires INTEGER NOT NULL,
   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS verification_tokens (
+CREATE INDEX sessions_userId_idx ON sessions(userId);
+
+CREATE TABLE verification_tokens (
   identifier TEXT NOT NULL,
-  token TEXT NOT NULL UNIQUE,
+  token TEXT NOT NULL,
   expires INTEGER NOT NULL,
   PRIMARY KEY (identifier, token)
 );
 
-CREATE INDEX IF NOT EXISTS accounts_userId_idx ON accounts(userId);
-CREATE INDEX IF NOT EXISTS sessions_userId_idx ON sessions(userId);
+CREATE UNIQUE INDEX verification_tokens_token_unique ON verification_tokens(token);
